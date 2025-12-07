@@ -1,0 +1,21 @@
+# REFINE iOS App - Cloudflare Workers 설정
+
+name = "rapid-sound-ba4c"
+main = "src/index.js"
+compatibility_date = "2024-12-03"
+
+# Workers 플랜 (무료 티어)
+# - 100,000 요청/일
+# - 10ms CPU 시간/요청
+# - 무제한 요청 (유료: $5/월부터)
+
+[vars]
+ENVIRONMENT = "production"
+APP_NAME = "REFINE"
+
+# OpenAI 지원 지역에서만 실행 (미국)
+[placement]
+mode = "smart"
+
+# OpenAI API 키는 wrangler secret으로 설정 (아래 명령어 실행)
+# wrangler secret put OPENAI_API_KEY
