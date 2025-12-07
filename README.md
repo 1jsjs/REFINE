@@ -1,6 +1,6 @@
 # REFINE iOS
 
-React/TypeScript 웹 앱을 iOS SwiftUI 네이티브 앱으로 변환한 프로젝트입니다.
+iOS SwiftUI 네이티브 앱 프로젝트입니다.
 
 ## 프로젝트 개요
 
