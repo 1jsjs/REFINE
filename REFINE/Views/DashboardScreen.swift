@@ -81,10 +81,12 @@ struct DashboardScreen: View {
                         totalPhotos: appState.totalPhotos,
                         totalCycles: appState.totalCycles,
                         menuItems: menuItems,
-                        theme: themeManager.theme
+                        theme: themeManager.theme,
+                        currentTone: themeManager.currentTone
                     ) { screen in
                         appState.navigate(to: screen)
                     }
+                    .environmentObject(themeManager)
                 } else {
                     CalendarView(
                         entries: currentCycleEntries,
@@ -116,7 +118,10 @@ struct PiecesView: View {
     let totalCycles: Int
     let menuItems: [(icon: String, label: String, subtitle: String, screen: Screen, color: Color)]
     let theme: Theme
+    let currentTone: RefineTone
     let onNavigate: (Screen) -> Void
+
+    @EnvironmentObject var themeManager: ThemeManager
     
     var body: some View {
         VStack(spacing: 0) {
@@ -143,11 +148,11 @@ struct PiecesView: View {
 
                     // Piece visualization
                     HStack(spacing: 8) {
+                        let palette = themeManager.paletteFor(themeManager.currentTone)
                         ForEach(0..<piecesPerCycle, id: \.self) { index in
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(index < currentPiece ?
-                                      LinearGradient(colors: [.systemBlue, .systemPurple], startPoint: .topLeading, endPoint: .bottomTrailing) :
-                                      LinearGradient(colors: [theme == .dark ? Color.darkElevated2 : Color.white], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                .fill(index < currentPiece ? palette.accent :
+                                      (theme == .dark ? Color.darkElevated2 : Color.white))
                                 .frame(width: 20, height: 20)
                         }
                     }
@@ -155,17 +160,14 @@ struct PiecesView: View {
 
                 // Progress Bar
                 GeometryReader { geometry in
+                    let palette = themeManager.paletteFor(themeManager.currentTone)
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 4)
                             .fill(theme == .dark ? Color.darkElevated2 : .white)
                             .frame(height: 8)
 
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(LinearGradient(
-                                colors: [.systemBlue, .systemPurple],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ))
+                            .fill(palette.accent)
                             .frame(width: geometry.size.width * CGFloat(currentPiece) / CGFloat(piecesPerCycle), height: 8)
                     }
                 }

@@ -156,7 +156,7 @@ struct HomeScreen: View {
                 // REFINE Button
                 Button(action: {
                     if currentPieceCount >= appState.piecesPerCycle {
-                        appState.handleRefine(entries: currentCycleEntries, context: modelContext)
+                        appState.navigate(to: .analysis)
                     }
                 }) {
                     HStack(spacing: 8) {

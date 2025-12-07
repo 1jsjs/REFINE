@@ -8,6 +8,8 @@ struct ResultScreen: View {
     @State private var alertMessage: String = ""
 
     var body: some View {
+        let palette = themeManager.paletteFor(themeManager.currentTone)
+
         GeometryReader { geometry in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
@@ -23,7 +25,7 @@ struct ResultScreen: View {
                                 Text("새 기록")
                                     .font(.system(size: 17))
                             }
-                            .foregroundColor(.systemBlue)
+                            .foregroundColor(palette.accent)
                         }
 
                         Spacer()
@@ -32,13 +34,26 @@ struct ResultScreen: View {
                     .padding(.top, max(60, geometry.safeAreaInsets.top + 20))
                     .padding(.bottom, 48)
 
-                // Keywords - Large, Bold
+                // Keywords - Large, Bold with tone color
                 if !appState.analysisKeywords.isEmpty {
-                    Text(appState.analysisKeywords.joined(separator: " "))
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(themeManager.theme == .dark ? .white : .black)
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 48)
+                    FlowLayout(spacing: 8) {
+                        ForEach(appState.analysisKeywords, id: \.self) { keyword in
+                            Text(keyword)
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(palette.accent)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(palette.chipBg)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 999)
+                                        .stroke(palette.accent.opacity(0.35), lineWidth: 1)
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 999))
+                                .fixedSize()
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 32)
                 } else {
                     Text("분석 중...")
                         .font(.system(size: 28, weight: .bold))
@@ -83,16 +98,16 @@ struct ResultScreen: View {
                         }) {
                             Image(systemName: "doc.on.doc")
                                 .font(.system(size: 20))
-                                .foregroundColor(.systemBlue)
+                                .foregroundColor(palette.accent)
                                 .frame(width: 40, height: 40)
-                                .background(themeManager.theme == .dark ? Color.darkElevated : Color.systemGray6)
+                                .background(palette.chipBg)
                                 .clipShape(Circle())
                         }
                     }
                     .padding(20)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.systemBlue, lineWidth: 2)
+                            .stroke(palette.accent, lineWidth: 2)
                     )
                     .padding(.horizontal, 24)
                     .padding(.bottom, 48)
@@ -135,7 +150,7 @@ struct ResultScreen: View {
                             Text("텍스트 복사")
                                 .font(.system(size: 17))
                         }
-                        .foregroundColor(.systemBlue)
+                        .foregroundColor(palette.accent)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                         .background(
@@ -160,6 +175,58 @@ struct ResultScreen: View {
             Button("확인", role: .cancel) {}
         } message: {
             Text(alertMessage)
+        }
+    }
+}
+
+// FlowLayout for wrapping keyword tags
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = FlowResult(
+            in: proposal.replacingUnspecifiedDimensions().width,
+            subviews: subviews,
+            spacing: spacing
+        )
+        return result.size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = FlowResult(
+            in: bounds.width,
+            subviews: subviews,
+            spacing: spacing
+        )
+        for (index, subview) in subviews.enumerated() {
+            subview.place(at: CGPoint(x: bounds.minX + result.positions[index].x, y: bounds.minY + result.positions[index].y), proposal: .unspecified)
+        }
+    }
+
+    struct FlowResult {
+        var size: CGSize = .zero
+        var positions: [CGPoint] = []
+
+        init(in maxWidth: CGFloat, subviews: Subviews, spacing: CGFloat) {
+            var x: CGFloat = 0
+            var y: CGFloat = 0
+            var lineHeight: CGFloat = 0
+
+            for subview in subviews {
+                let size = subview.sizeThatFits(.unspecified)
+
+                if x + size.width > maxWidth && x > 0 {
+                    x = 0
+                    y += lineHeight + spacing
+                    lineHeight = 0
+                }
+
+                positions.append(CGPoint(x: x, y: y))
+                lineHeight = max(lineHeight, size.height)
+                x += size.width + spacing
+            }
+
+            self.size = CGSize(width: maxWidth, height: y + lineHeight)
         }
     }
 }

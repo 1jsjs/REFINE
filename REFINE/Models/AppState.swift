@@ -39,8 +39,6 @@ class AppState: ObservableObject {
     // First launch
     @Published var isFirstLaunch: Bool = !UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
 
-    private let openAIService = OpenAIService()
-
     init() {
         // Load saved pieces per cycle setting
         let savedPieces = UserDefaults.standard.integer(forKey: "piecesPerCycle")
@@ -62,14 +60,32 @@ class AppState: ObservableObject {
             if currentScreen != .dashboard {
                 navigationStack.append(currentScreen)
             }
+
+            // Clear analysis results when navigating away from result screen
+            if currentScreen == .result && screen != .result {
+                clearAnalysisResults()
+            }
+
             currentScreen = screen
         }
     }
     
     func navigateBack() {
         withAnimation(.easeInOut(duration: 0.35)) {
+            // Clear analysis results when navigating away from result screen
+            if currentScreen == .result {
+                clearAnalysisResults()
+            }
+
             if !navigationStack.isEmpty {
-                currentScreen = navigationStack.removeLast()
+                var targetScreen = navigationStack.removeLast()
+
+                // Skip analysis screen when navigating back from result
+                if currentScreen == .result && targetScreen == .analysis {
+                    targetScreen = navigationStack.isEmpty ? .dashboard : navigationStack.removeLast()
+                }
+
+                currentScreen = targetScreen
             } else {
                 currentScreen = .dashboard
             }
@@ -98,52 +114,32 @@ class AppState: ObservableObject {
         }
     }
 
-    func handleRefine(entries: [DailyEntry], context: ModelContext) {
-        navigate(to: .analysis)
-
-        Task { @MainActor in
-            do {
-                let result = try await openAIService.analyzeEntries(entries)
-
-                self.analysisKeywords = result.keywords
-                self.analysisSummary = result.summary
-                self.analysisOneLiner = result.oneLiner
-
-                // Save analysis to database
-                let analysis = CycleAnalysis(
-                    cycleNumber: currentCycle,
-                    firstPieceDate: entries.map { $0.date }.min() ?? Date(),
-                    lastPieceDate: entries.map { $0.date }.max() ?? Date(),
-                    keywords: result.keywords,
-                    summary: result.summary,
-                    oneLiner: result.oneLiner
-                )
-                context.insert(analysis)
-                try context.save()
-
-                print("✅ Analysis completed and saved")
-                print("Keywords: \(result.keywords)")
-                print("Summary: \(result.summary)")
-                print("One-liner: \(result.oneLiner)")
-
-                navigate(to: .result)
-            } catch {
-                print("❌ Analysis failed: \(error)")
-                errorMessage = error.localizedDescription
-                showError = true
-                navigate(to: .dashboard)
-            }
-        }
-    }
+    // handleRefine는 이제 AnalysisScreen에서 직접 처리합니다
 
     func handleBack() {
         navigateBack()
     }
 
     func handleReset() {
-        navigationStack.removeAll()
-        navigate(to: .dashboard)
-        inputText = ""
+        withAnimation(.easeInOut(duration: 0.35)) {
+            navigationStack.removeAll()
+            currentScreen = .dashboard
+            inputText = ""
+            // Clear analysis results when resetting
+            clearAnalysisResults()
+        }
+    }
+
+    func completeCycle() {
+        // Move to next cycle
+        currentCycle += 1
+        currentPiece = 0
+    }
+
+    func clearAnalysisResults() {
+        analysisKeywords = []
+        analysisSummary = ""
+        analysisOneLiner = ""
     }
 
     func loadStatistics(from entries: [DailyEntry]) {

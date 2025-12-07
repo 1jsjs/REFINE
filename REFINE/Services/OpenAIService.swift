@@ -1,5 +1,20 @@
 import Foundation
 
+struct RefineAIResponse: Codable {
+    let tone: String
+    let keywords: [String]
+    let summary: String
+    let oneLiner: String
+}
+
+enum OpenAIServiceError: Error {
+    case invalidURL
+    case badResponse
+    case emptyBody
+    case jsonNotFound
+    case decodeFailed
+}
+
 struct OpenAIService {
     // Cloudflare Workers 엔드포인트 (API 키는 서버에서 관리)
     private let endpoint: String
@@ -10,13 +25,14 @@ struct OpenAIService {
         self.endpoint = APIConfig.apiBaseURL
     }
 
-    func analyzeEntries(_ entries: [DailyEntry]) async throws -> AnalysisResult {
+    func analyzeEntries(_ entries: [DailyEntry]) async throws -> RefineAIResponse {
         // 엔드포인트 확인
         guard !endpoint.isEmpty else {
             print("⚠️ API endpoint missing, using dummy data for testing")
             // Wait a bit to simulate API call
             try await Task.sleep(nanoseconds: 2_000_000_000)
-            return AnalysisResult(
+            return RefineAIResponse(
+                tone: "growth",
                 keywords: ["#성장", "#도전", "#열정"],
                 summary: "이번 주는 새로운 도전과 배움의 연속이었습니다. 어려움 속에서도 포기하지 않고 계속 앞으로 나아가는 모습이 인상적이었습니다.",
                 oneLiner: "실패를 두려워하지 않고 끊임없이 도전하며 성장하는 사람"
@@ -34,21 +50,31 @@ struct OpenAIService {
 
         let entryCount = entries.count
         let prompt = """
-        다음은 사용자가 \(entryCount)개의 조각으로 작성한 기록입니다. 이를 분석하여 다음을 제공해주세요:
+        You are a JSON-only assistant.
+        Return ONLY a single valid JSON object.
+        Do not wrap it in markdown.
+        Do not include any extra text.
 
-        1. 핵심 키워드 2-3개 (해시태그 형식, 예: #집요함, #성장)
-        2. 전체적인 요약 (2-3문장)
-        3. 자기소개서에 사용할 수 있는 한 줄 설명 (1문장)
-
-        응답은 반드시 다음 JSON 형식으로만 작성해주세요:
+        Schema:
         {
-          "keywords": ["#키워드1", "#키워드2"],
-          "summary": "요약 문장들...",
-          "oneLiner": "자소서용 한 줄..."
+          "tone": "calm|growth|challenge|joy|reflection|neutral",
+          "keywords": [string, string, string, string, string],
+          "summary": string,
+          "oneLiner": string
         }
 
-        \(entryCount)개 조각의 기록:
+        Rules:
+        - tone: Choose ONE that best represents the overall emotional tone (calm, growth, challenge, joy, reflection, neutral)
+        - keywords: 3~7 Korean hashtag items (e.g., #성장, #도전)
+        - summary: 2~4 sentences in Korean
+        - oneLiner: One sentence in Korean, no quotes, suitable for job application essays
+
+        Analyze the user's journal entries for this cycle and produce the JSON result.
+
+        Entries:
         \(combinedText)
+
+        Return JSON only.
         """
 
         let request = try createRequest(prompt: prompt)
@@ -75,12 +101,12 @@ struct OpenAIService {
         let result = try JSONDecoder().decode(OpenAIResponse.self, from: data)
 
         guard let content = result.choices.first?.message.content else {
-            throw OpenAIError.noContent
+            throw OpenAIServiceError.emptyBody
         }
 
         print("[Cloudflare Workers] Message content length: \(content.count)")
 
-        return try parseAnalysisResult(from: content)
+        return try parseRefineAIResponse(from: content)
     }
 
     private func createRequest(prompt: String) throws -> URLRequest {
@@ -108,80 +134,26 @@ struct OpenAIService {
         return request
     }
 
-    private func parseAnalysisResult(from content: String) throws -> AnalysisResult {
-        // Try to extract JSON from code blocks or plain text
-        let source = content.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        // 1) Prefer fenced code blocks with json
-        if let range = source.range(of: "```json") {
-            let after = source[range.upperBound...]
-            if let end = after.range(of: "```") {
-                let json = after[..<end.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
-                if let data = json.data(using: .utf8) {
-                    do { return try JSONDecoder().decode(AnalysisResult.self, from: data) } catch {
-                        print("[Cloudflare Workers] JSON decode failed from json block: \(error)")
-                    }
-                }
-            }
+    private func parseRefineAIResponse(from content: String) throws -> RefineAIResponse {
+        // Use JSONExtractor utility
+        guard let jsonString = JSONExtractor.extractFirstJSONObject(from: content) else {
+            print("[Cloudflare Workers] No JSON object found in content: \(content.prefix(200))")
+            throw OpenAIServiceError.jsonNotFound
         }
 
-        // 2) Any fenced code block
-        if let start = source.range(of: "```") {
-            let after = source[start.upperBound...]
-            if let end = after.range(of: "```") {
-                let json = after[..<end.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
-                if let data = json.data(using: .utf8) {
-                    do { return try JSONDecoder().decode(AnalysisResult.self, from: data) } catch {
-                        print("[Cloudflare Workers] JSON decode failed from generic block: \(error)")
-                    }
-                }
-            }
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            throw OpenAIServiceError.decodeFailed
         }
 
-        // 3) Heuristic: find first top-level JSON object substring
-        if let obj = Self.firstJSONObject(in: source) {
-            if let data = obj.data(using: .utf8) {
-                do { return try JSONDecoder().decode(AnalysisResult.self, from: data) } catch {
-                    print("[Cloudflare Workers] JSON decode failed from heuristic object: \(error)\nObject: \(obj)")
-                }
-            }
+        do {
+            let decoded = try JSONDecoder().decode(RefineAIResponse.self, from: jsonData)
+            print("[Cloudflare Workers] Successfully decoded: tone=\(decoded.tone), keywords=\(decoded.keywords)")
+            return decoded
+        } catch {
+            print("[Cloudflare Workers] JSON decode failed: \(error)\nJSON: \(jsonString)")
+            throw OpenAIServiceError.decodeFailed
         }
-
-        // 4) Last attempt: treat entire content as JSON
-        if let data = source.data(using: .utf8) {
-            do { return try JSONDecoder().decode(AnalysisResult.self, from: data) } catch {
-                print("[Cloudflare Workers] Final JSON decode failed: \(error)\nContent: \(source)")
-            }
-        }
-
-        throw OpenAIError.invalidJSON
     }
-
-    private static func firstJSONObject(in text: String) -> String? {
-        var depth = 0
-        var startIndex: String.Index?
-        var i = text.startIndex
-        while i < text.endIndex {
-            let ch = text[i]
-            if ch == "{" {
-                if depth == 0 { startIndex = i }
-                depth += 1
-            } else if ch == "}" {
-                if depth > 0 { depth -= 1 }
-                if depth == 0, let s = startIndex {
-                    return String(text[s...i])
-                }
-            }
-            i = text.index(after: i)
-        }
-        return nil
-    }
-}
-
-struct AnalysisResult: Codable {
-    let keywords: [String]
-    let summary: String
-    let oneLiner: String
 }
 
 struct OpenAIResponse: Codable {
@@ -197,27 +169,18 @@ struct OpenAIResponse: Codable {
 }
 
 enum OpenAIError: LocalizedError {
-    case missingEndpoint
     case invalidURL
     case invalidResponse
     case httpError(statusCode: Int)
-    case noContent
-    case invalidJSON
 
     var errorDescription: String? {
         switch self {
-        case .missingEndpoint:
-            return "API 엔드포인트가 설정되지 않았습니다. Info.plist에서 APIBaseURL을 확인해주세요."
         case .invalidURL:
             return "유효하지 않은 URL입니다."
         case .invalidResponse:
             return "유효하지 않은 응답입니다."
         case .httpError(let statusCode):
             return "HTTP 오류: \(statusCode)"
-        case .noContent:
-            return "응답 내용이 없습니다."
-        case .invalidJSON:
-            return "JSON 파싱에 실패했습니다."
         }
     }
 }

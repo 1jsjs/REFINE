@@ -45,6 +45,40 @@ export default {
 
       console.log(`✅ [REFINE] OpenRouter API 요청 - Model: ${body.model || 'openai/gpt-4o-mini'}`);
 
+      // System message: tone 포함 JSON 강제
+      const systemMessage = {
+        role: 'system',
+        content: `You are a JSON-only assistant.
+Return ONLY a single valid JSON object.
+Do not wrap it in markdown code blocks.
+Do not include any extra text before or after the JSON.
+
+Schema:
+{
+  "tone": "calm|growth|challenge|joy|reflection|neutral",
+  "keywords": [string, string, string, string, string],
+  "summary": string,
+  "oneLiner": string
+}
+
+Rules:
+- tone: Choose ONE that best represents the overall emotional tone of the journal entries:
+  * calm: 평온, 차분한 성찰
+  * growth: 성장, 발전, 학습
+  * challenge: 도전, 열정, 투쟁
+  * joy: 기쁨, 행복, 감사
+  * reflection: 깊은 성찰, 내면 탐색
+  * neutral: 중립적, 일상적 기록
+- keywords: 3~7 Korean hashtag items (e.g., #성장, #도전, #평온)
+- summary: 2~4 sentences in Korean
+- oneLiner: One sentence in Korean, no quotes, suitable for job application essays
+
+Return ONLY the JSON object, nothing else.`
+      };
+
+      // 기존 messages에 system message 추가
+      const messages = [systemMessage, ...(body.messages || [])];
+
       // OpenRouter API 호출 (OpenAI 호환)
       const openaiResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -56,7 +90,7 @@ export default {
         },
         body: JSON.stringify({
           model: body.model || 'openai/gpt-4o-mini',
-          messages: body.messages,
+          messages: messages,
           temperature: body.temperature || 0.7,
           max_tokens: body.max_tokens || 1000,
         })

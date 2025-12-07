@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		090F86872EE59E0600F212F3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 090F86862EE59E0600F212F3 /* Assets.xcassets */; };
 		0921C6AE2ED441E400FCF3E0 /* CycleAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0921C6AD2ED441E400FCF3E0 /* CycleAnalysis.swift */; };
 		0921C6B02ED4427C00FCF3E0 /* OnboardingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0921C6AF2ED4427C00FCF3E0 /* OnboardingScreen.swift */; };
 		09499BF12EDDC7240045069F /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09499BF02EDDC7240045069F /* CalendarView.swift */; };
@@ -16,6 +17,9 @@
 		095AD1102ED44A4F0020D0F9 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AD10B2ED44A4F0020D0F9 /* ImagePicker.swift */; };
 		095AD1112ED44A4F0020D0F9 /* NotificationSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AD10C2ED44A4F0020D0F9 /* NotificationSettingsScreen.swift */; };
 		095AD1122ED44A4F0020D0F9 /* QuestionCustomizationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AD10D2ED44A4F0020D0F9 /* QuestionCustomizationScreen.swift */; };
+		097E686C2EE5B1F900F603C1 /* RefineTone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097E686B2EE5B1F900F603C1 /* RefineTone.swift */; };
+		097E686E2EE5B20600F603C1 /* JSONExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097E686D2EE5B20600F603C1 /* JSONExtractor.swift */; };
+		097E68712EE5B21E00F603C1 /* RefineOrb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097E686F2EE5B21E00F603C1 /* RefineOrb.swift */; };
 		A0000001000000000000000A /* REFINEApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000001000000000000000B /* REFINEApp.swift */; };
 		A0000001000000000000000C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000001000000000000000D /* ContentView.swift */; };
 		A0000001000000000000000E /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000001000000000000000F /* AppState.swift */; };
@@ -36,6 +40,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		090F86862EE59E0600F212F3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0921C6AD2ED441E400FCF3E0 /* CycleAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CycleAnalysis.swift; sourceTree = "<group>"; };
 		0921C6AF2ED4427C00FCF3E0 /* OnboardingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingScreen.swift; sourceTree = "<group>"; };
 		09499BF02EDDC7240045069F /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
@@ -45,6 +50,9 @@
 		095AD10C2ED44A4F0020D0F9 /* NotificationSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsScreen.swift; sourceTree = "<group>"; };
 		095AD10D2ED44A4F0020D0F9 /* QuestionCustomizationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionCustomizationScreen.swift; sourceTree = "<group>"; };
 		095AD10E2ED44A4F0020D0F9 /* RecordDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordDetailScreen.swift; sourceTree = "<group>"; };
+		097E686B2EE5B1F900F603C1 /* RefineTone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefineTone.swift; sourceTree = "<group>"; };
+		097E686D2EE5B20600F603C1 /* JSONExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONExtractor.swift; sourceTree = "<group>"; };
+		097E686F2EE5B21E00F603C1 /* RefineOrb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefineOrb.swift; sourceTree = "<group>"; };
 		A0000001000000000000000B /* REFINEApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = REFINEApp.swift; sourceTree = "<group>"; };
 		A0000001000000000000000D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A0000001000000000000000F /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -77,6 +85,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		097E68702EE5B21E00F603C1 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				097E686F2EE5B21E00F603C1 /* RefineOrb.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		A0000001000000000000005D /* REFINE */ = {
 			isa = PBXGroup;
 			children = (
@@ -91,6 +107,7 @@
 				A0000001000000000000005A /* Info.plist */,
 				09499BF22EDDD0E80045069F /* PRE_LAUNCH_CHECKLIST.md */,
 				09499BF42EDDD5020045069F /* CLOUD_ARCHITECTURE_GUIDE.md */,
+				090F86862EE59E0600F212F3 /* Assets.xcassets */,
 			);
 			path = REFINE;
 			sourceTree = "<group>";
@@ -105,6 +122,7 @@
 		A0000001000000000000006D /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				097E686D2EE5B20600F603C1 /* JSONExtractor.swift */,
 				A0000001000000000000001D /* Colors.swift */,
 				A000000100000000000000AA /* APIConfig.swift */,
 			);
@@ -138,6 +156,7 @@
 		A000000100000000000000AD /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				097E686B2EE5B1F900F603C1 /* RefineTone.swift */,
 				0921C6AD2ED441E400FCF3E0 /* CycleAnalysis.swift */,
 				A0000001000000000000000F /* AppState.swift */,
 				A0000001000000000000001B /* ThemeManager.swift */,
@@ -149,6 +168,7 @@
 		A000000100000000000000AE /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				097E68702EE5B21E00F603C1 /* Components */,
 				095AD10B2ED44A4F0020D0F9 /* ImagePicker.swift */,
 				095AD10C2ED44A4F0020D0F9 /* NotificationSettingsScreen.swift */,
 				095AD10D2ED44A4F0020D0F9 /* QuestionCustomizationScreen.swift */,
@@ -234,6 +254,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				09499BF52EDDD5020045069F /* CLOUD_ARCHITECTURE_GUIDE.md in Resources */,
+				090F86872EE59E0600F212F3 /* Assets.xcassets in Resources */,
 				09499BF32EDDD0E80045069F /* PRE_LAUNCH_CHECKLIST.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -260,6 +281,7 @@
 				A0000001000000000000002C /* AnalysisScreen.swift in Sources */,
 				A0000001000000000000002E /* ResultScreen.swift in Sources */,
 				A0000001000000000000003A /* StatsScreen.swift in Sources */,
+				097E68712EE5B21E00F603C1 /* RefineOrb.swift in Sources */,
 				0921C6AE2ED441E400FCF3E0 /* CycleAnalysis.swift in Sources */,
 				A0000001000000000000003C /* ListScreen.swift in Sources */,
 				0921C6B02ED4427C00FCF3E0 /* OnboardingScreen.swift in Sources */,
@@ -267,8 +289,10 @@
 				A0000001000000000000004A /* ShareScreen.swift in Sources */,
 				A0000001000000000000004C /* SettingsScreen.swift in Sources */,
 				A0000001000000000000005E /* DailyEntry.swift in Sources */,
+				097E686E2EE5B20600F603C1 /* JSONExtractor.swift in Sources */,
 				A0000001000000000000007A /* APIConfig.swift in Sources */,
 				A0000001000000000000008A /* OpenAIService.swift in Sources */,
+				097E686C2EE5B1F900F603C1 /* RefineTone.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
